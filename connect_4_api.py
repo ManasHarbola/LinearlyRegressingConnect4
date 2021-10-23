@@ -16,7 +16,8 @@ class Connect_4_API:
         "Sec-Fetch-Site": "none",
         "Sec-Fetch-User": "?1",
         "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:93.0) Gecko/20100101 Firefox/93.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0"
+
     }
     users = {"id": {"std": 0.1, "avg": 1}}
     def __init__(self):
@@ -65,9 +66,32 @@ class Connect_4_API:
         print("hi")
         #blah
 
-    #returns a normalized average optimality score and the std dev of optimal moves made by opponent
+    #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state):
-        print("hi")
+        moveScores = []
+        for i in range(0, len(state), 2):
+            r = requests.get(Connect_4_API.GET_URL + state[:i], headers=Connect_4_API.GET_HEADER)
+            data = r.json()
+            colScores = data['score']
+            scoreFreq = {}
+            numChoices = 0
+            for score in colScores:
+                if score != 100:
+                    scoreFreq[score] = scoreFreq.get(score, 0) + 1
+                    numChoices += 1
+
+            scores = [(k, scoreFreq[k]) for k in reversed(scoreFreq.keys())]
+            moveScore = colScores[int(state[i]) - 1]
+            movesBetterThan = numChoices
+
+            for i in range(len(scores)):
+                if scores[i][0] > moveScore:
+                    movesBetterThan -= scores[i][1]
+                else:
+                    moveScores.append(movesBetterThan / numChoices)
+
+        return (np.mean(moveScores), np.std(moveScores))
+      
     #send move made by AI based on player simulation
     #def postNextMove(move):
         #blah
