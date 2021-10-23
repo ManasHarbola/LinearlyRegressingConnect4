@@ -46,7 +46,7 @@ class Connect_4_API:
         move_and_vals = {}#{"score": "moves"}
         scores = []
 
-        for i in range(len(data["score"])):
+        for i in range(1, len(data["score"]) + 1):
             score = data["score"][i]
             if score == 100:
                 continue
