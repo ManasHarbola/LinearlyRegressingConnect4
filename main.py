@@ -1,15 +1,15 @@
-import requests
-import random
-import json
-import numpy as np
 from flask import Flask
+import json
+import random
+import requests
+import numpy as np
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def hello_world():
-  return "Hello, World!"
+  return "test"
 
 
 class Connect_4_API:
@@ -29,17 +29,19 @@ class Connect_4_API:
 
     }
     users = {"id": {"std": 0.1, "avg": 1}}
-    def __init__(self):
-        users = {"id": {"std": 0.1, "avg": .89}}
 
-    def generateNextMove(self, board, player):
+    @app.route("/generateNextMove/<jsonStr>")
+    def generateNextMove(jsonStr):
+        obj = json.loads(jsonStr)
+        board = obj["board"]
+        player = obj["player"]
         #generate random num based on players ability
-        avg = self.users[player]["avg"]
-        std = self.users[player]["std"]
+        avg = Connect_4_API.users[player]["avg"]
+        std = Connect_4_API.users[player]["std"]
         rand_num = np.random.normal(loc = avg, scale = std, size = 1)
 
         #get request 
-        r = requests.get(url=self.GET_URL + board, headers=self.GET_HEADER)
+        r = requests.get(url=Connect_4_API.GET_URL + board, headers=Connect_4_API.GET_HEADER)
         data = r.json()
         move_and_vals = {}#{"score": "moves"}
         scores = []
@@ -59,22 +61,16 @@ class Connect_4_API:
             if sum_of_score > rand_num:
                 
                 return random.choice(move_and_vals[scores[i]])
-        return random.choice(move_and_vals[scores[-1]])
-
-    def testGetReq(self, board):
-        r = requests.get(url=self.GET_URL + board, headers=self.GET_HEADER)
-        data = r.json()
-        print("text ", r.text)
-        print(data["score"])
-        #print(r.text)
+        return str(random.choice(move_and_vals[scores[-1]]))
 
     
     #method to grab best possible moves
     #used for building the model of the user
     def getBestMoves():
-        print("hi")
-        #blah
+        pass
 
+    
+    @app.route("/<state>")
     #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state):
         moveScores = []
@@ -99,7 +95,7 @@ class Connect_4_API:
                 else:
                     moveScores.append(movesBetterThan / numChoices)
 
-        return (np.mean(moveScores), np.std(moveScores))
+        return {"mean": str(np.mean(moveScores)), "std": str(np.std(moveScores))}
       
     #send move made by AI based on player simulation
     #def postNextMove(move):
@@ -127,14 +123,6 @@ print(r.text)
 api.testGetReq("444447123311")
 
 """
-api = Connect_4_API()
-s = "444447123311215666611673322237657452355775"
-s = "44"
-for i in range(len(s)):
-    api.testGetReq(s[:i + 1])
-    print(api.generateNextMove(s[:i + 1], "id"))
-
-
 
 '''
 for i in range(100):
@@ -144,5 +132,11 @@ for i in range(100):
 #data = r.json()
 #jsonStr = json.dumps(data)
 #print(jsonStr)
-print(Connect_4_API.rateOppMoves("44444723333213216275"))
+#print(Connect_4_API.rateOppMoves("44444723333213216275"))
 
+
+if __name__ == '__main__':
+    obj = {"board": "1121", "player": "id"}
+    jsonStr = json.dumps(obj)
+    print(jsonStr)
+    app.run()
