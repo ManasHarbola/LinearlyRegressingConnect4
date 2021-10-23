@@ -1,8 +1,9 @@
 import requests
 import json
+import time
 
 class Connect_4_API:
-    GET_URL = "https://connect4.gamesolver.org/solve?pos=1"
+    GET_URL = "https://connect4.gamesolver.org/solve?pos="
     GET_HEADER = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Encoding": "gzip, deflate, br",
@@ -22,8 +23,15 @@ class Connect_4_API:
         print("hi")
         #blah
 
-    #returns a normalized average optimality score and the std dev of optimal moves made by opponent
+    #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state):
+        moveScores = []
+        for i in range(len(state)):
+            if i % 2 == 0:
+                print(state[:i+1])
+                r = requests.get(Connect_4_API.GET_URL + state[:i+1], headers=Connect_4_API.GET_HEADER)
+                print(r.text)
+                time.sleep(0.25)
 
     #send move made by AI based on player simulation
     #def postNextMove(move):
@@ -37,3 +45,14 @@ for i in range(100):
 #data = r.json()
 #jsonStr = json.dumps(data)
 #print(jsonStr)
+
+
+s = "444447123311215666611673322237657452355775"
+for i in range(len(s)):
+    print(s[:i+1])
+    r = requests.get((Connect_4_API.GET_URL + s[:i+1]), headers=Connect_4_API.GET_HEADER)
+    data = r.json()
+    print(data.get("score"))
+    time.sleep(1)
+
+#Connect_4_API.rateOppMoves("444447123311215666611673322237657452355775")
