@@ -10,23 +10,61 @@ import Game from './components/Game'
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
 import { InAppNotificationProvider } from 'react-native-in-app-notification';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import YouWin from './components/YouWin'
 import GameOver from './components/GameOver'
+import { Alert } from 'react-native';
 
+
+export const API_URL = 'http://8efb-2610-148-1f02-7000-3da7-9f21-15ea-f7d8.ngrok.io'
 
 const Stack = createNativeStackNavigator();
 
 async function registerForPushNotificationsAsync() {
-	const{ status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
-	let finalStatus = status;
+  const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+  let finalStatus = status;
 
-	if (status !== 'granted') {
-	const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-	finalStatus = status;
-	}
- }
+  if (status !== 'granted') {
+    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    finalStatus = status;
+  } funwithncr, hireme
+}
 export default function App() {
-  //let { status } = await Location.requestForegroundPermissionsAsync();
+
+
+  useEffect(() => {
+    const promptUser = () => {
+      Alert.prompt(
+        "Name",
+        "Enter Your name to play:",
+        [
+          {
+            text: "Set Name",
+            onPress: async value => {
+              try {
+                await AsyncStorage.setItem('@name', value)
+              } catch (e) {
+                // saving error
+              }
+            }
+          }
+        ],
+        "plain-text"
+      );
+    }
+    (async () => {
+      try {
+        const value = await AsyncStorage.getItem('@name')
+        if (value !== null) {
+          // value previously stored
+        } else {
+          promptUser();
+        }
+      } catch (e) {
+        // error reading value
+      }
+    })()
+  })
 
   return (
     <NavigationContainer>
@@ -129,15 +167,32 @@ function World({ navigation }) {
 }
 
 function Arena({ navigation }) {
+
+  useEffect(() => {
+    Alert.prompt(
+      "Train your Agent",
+      "To play at this arena, first play against an AI.",
+      [
+        {
+          text: "Play",
+          onPress: async value => {
+            navigation.navigate('Game', {playerId: 'id'});
+          }
+        }
+      ],
+      "plain-text"
+    );
+  }, [])
+  
   return (
     <View style={styles.centerItems}>
       <Text style={styles.welcomeMessage}>Welcome to Tech Green Arena</Text>
       <Text style={styles.topPlayer} >Top Players</Text>
-      <Text style = {styles.leaderboard}>First: </Text>
-      <Text style = {styles.leaderboard}>Second: </Text>
-      <Text style = {styles.leaderboard}>Third: </Text>
+      <Text style={styles.leaderboard}>First: </Text>
+      <Text style={styles.leaderboard}>Second: </Text>
+      <Text style={styles.leaderboard}>Third: </Text>
 
-      <Button style = {styles.startGame}
+      <Button style={styles.startGame}
         title="Play Game"
         color="#f194ff"
         onPress={() => {
@@ -170,7 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     alignItems: 'center'
   },
-  leaderboard:{
+  leaderboard: {
     color: 'blue',
     fontSize: 20
   }

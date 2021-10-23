@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, Dimensions, Animated, Button } from 'react-nati
 import MapView, { Marker } from 'react-native-maps';
 import { NavigationContainer } from '@react-navigation/native';
 import { InAppNotificationProvider } from 'react-native-in-app-notification';
+import { API_URL } from '../App'
 
 // disks are strings: 'red', 'yellow', 'empty'
 
@@ -31,6 +32,41 @@ function createGrid(w, h) {
     ret.push(row);
   }
   return ret;
+}
+
+const nextMove = async (moveHistory, playerId) => {
+  const response = await fetch(API_URL, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, *cors, same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+    body: JSON.stringify({
+      board: moveHistory,
+      player: playerId
+    }) // body data type must match "Content-Type" header
+  });
+  return response.json();
+}
+
+const rateOpp = async (moveHistory) => {
+  const response = await fetch(API_URL + '/' + moveHistory, {
+    method: 'GET', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, *cors, same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+    //body: JSON.stringify(data) // body data type must match "Content-Type" header
+  });
+  return response.json();
 }
 
 function copyGrid(grid) {
@@ -69,16 +105,24 @@ function checkGame(board, color) {
   }
   return false;
 }
-function Game({ navigation }) {
+function Game({ route, navigation }) {
+  const { playerId } = route.params;
+
   const w = 7, h = 6;
   const [grid, setGrid] = useState(createGrid(w, h));
   const [nextColor, setNextColor] = useState('red');
+  const [moves, setMoves] = useState('')
 
   const onPress = (row, col) => {
     //console.log(row, col)
     const gridCopy = copyGrid(grid);
     if (addDisk(gridCopy, col, nextColor)) {
+      setMoves(moves + col)
       setGrid(gridCopy);
+
+      const nextMove = nextMove(moveHistory, playerId)
+      console.log(nextMove)
+
       if (checkGame(gridCopy, 'red')) {
         navigation.navigate('YouWin');
       } else if (checkGame(gridCopy, 'yellow')) {
