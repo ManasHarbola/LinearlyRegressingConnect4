@@ -35,8 +35,9 @@ function createGrid(w, h) {
 }
 
 const nextMove = async (moveHistory, playerId) => {
-  const response = await fetch(API_URL, {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+  const response = await fetch(API_URL + '/generateNextMove/'
+    + JSON.stringify({ board: moveHistory, player: playerId }), {
+    method: 'GET', // *GET, POST, PUT, DELETE, etc.
     mode: 'cors', // no-cors, *cors, same-origin
     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
     credentials: 'same-origin', // include, *same-origin, omit
@@ -45,10 +46,7 @@ const nextMove = async (moveHistory, playerId) => {
     },
     redirect: 'follow',
     referrerPolicy: 'no-referrer',
-    body: JSON.stringify({
-      board: moveHistory,
-      player: playerId
-    }) // body data type must match "Content-Type" header
+    // body data type must match "Content-Type" header
   });
   return response.json();
 }
@@ -106,29 +104,34 @@ function checkGame(board, color) {
   return false;
 }
 function Game({ route, navigation }) {
-  const { playerId } = route.params;
+  // const { playerId } = route.params;
+  const playerId = 'id';
 
   const w = 7, h = 6;
   const [grid, setGrid] = useState(createGrid(w, h));
   const [nextColor, setNextColor] = useState('red');
   const [moves, setMoves] = useState('')
 
-  const onPress = (row, col) => {
+  const onPress = async (row, col) => {
     //console.log(row, col)
     const gridCopy = copyGrid(grid);
     if (addDisk(gridCopy, col, nextColor)) {
-      setMoves(moves + col)
-      setGrid(gridCopy);
+      const qmoves = moves + (col+1)
+     
+      
 
-      const nextMove = nextMove(moveHistory, playerId)
-      console.log(nextMove)
+      const move = await nextMove(qmoves, playerId)
+      addDisk(gridCopy, move-1, 'yellow');
+      setGrid(gridCopy);
+      console.log(move)
+      setMoves(qmoves + move)
 
       if (checkGame(gridCopy, 'red')) {
         navigation.navigate('YouWin');
       } else if (checkGame(gridCopy, 'yellow')) {
         navigation.navigate('GameOver');
       }
-      setNextColor(nextColor === 'red' ? 'yellow' : 'red');
+      // setNextColor(nextColor === 'red' ? 'yellow' : 'red');
 
       //console.log(gridCopy)
     } else {
@@ -139,7 +142,7 @@ function Game({ route, navigation }) {
   return (
     <>
       <Button
-        onPress={() => setGrid(createGrid(w,h))}
+        onPress={() => setGrid(createGrid(w, h))}
         title="clear"
         color="#841584"
         accessibilityLabel="Learn more about this purple button"

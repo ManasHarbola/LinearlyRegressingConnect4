@@ -42,12 +42,13 @@ class Connect_4_API:
 
         #get request 
         r = requests.get(url=Connect_4_API.GET_URL + board, headers=Connect_4_API.GET_HEADER)
+        print(r)
         data = r.json()
         move_and_vals = {}#{"score": "moves"}
         scores = []
 
         for i in range(1, len(data["score"]) + 1):
-            score = data["score"][i]
+            score = data["score"][i - 1]
             if score == 100:
                 continue
             if score not in move_and_vals.keys():
@@ -60,7 +61,7 @@ class Connect_4_API:
             sum_of_score += (1 / len(scores))
             if sum_of_score > rand_num:
                 
-                return random.choice(move_and_vals[scores[i]])
+                return str(random.choice(move_and_vals[scores[i]]))
         return str(random.choice(move_and_vals[scores[-1]]))
 
     
@@ -70,7 +71,7 @@ class Connect_4_API:
         pass
 
     
-    @app.route("/<state>")
+    @app.route("/rateOppMoves/<state>")
     #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state):
         moveScores = []

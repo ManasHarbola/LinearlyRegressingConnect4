@@ -169,7 +169,7 @@ function World({ navigation }) {
 function Arena({ navigation }) {
 
   useEffect(() => {
-    Alert.prompt(
+    Alert.alert(
       "Train your Agent",
       "To play at this arena, first play against an AI.",
       [
