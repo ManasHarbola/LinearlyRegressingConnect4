@@ -16,8 +16,6 @@ import GameOver from './components/GameOver'
 import { Alert } from 'react-native';
 
 
-export const API_URL = 'http://8efb-2610-148-1f02-7000-3da7-9f21-15ea-f7d8.ngrok.io'
-
 const Stack = createNativeStackNavigator();
 
 async function registerForPushNotificationsAsync() {
@@ -148,7 +146,7 @@ function World({ navigation }) {
     }
   }
 
-  return (<MapView style={styles.map} showsUserLocation >
+  return (<MapView style={styles.map} showsUserLocation followsUserLocation>
     {
       arenas.map(arena => <Marker
         key={arena.title}
@@ -196,7 +194,7 @@ function Arena({ navigation }) {
         title="Play Game"
         color="#f194ff"
         onPress={() => {
-          navigation.navigate('Game');
+          navigation.navigate('Game', {playerId: 'id'});
         }}
       />
     </View>

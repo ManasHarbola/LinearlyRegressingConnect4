@@ -5,7 +5,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { NavigationContainer } from '@react-navigation/native';
 import { InAppNotificationProvider } from 'react-native-in-app-notification';
 
-function YouWin({ navigation }) {
+function YouWin({ route, navigation }) {
   return (
     <View>
       <Text style = {styles.winMessage}>You Won! Want to play more for us to better simulate you?</Text>
@@ -34,7 +34,8 @@ const styles = StyleSheet.create({
   ,
   winMessage: {
     color: 'white',
-    backgroundColor: 'blue'
+    backgroundColor: 'blue',
+    justifyContent: 'center'
   }
 });
 
