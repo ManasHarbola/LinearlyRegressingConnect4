@@ -34,7 +34,15 @@ class Arenas(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     coor_x = db.Column(db.Float())
     coor_y = db.Column(db.Float())
-    leaderBoards = 
+    leaderBoards = db.relationship('LeaderBoards', backref='author', lazy=True)
+
+    def __init__(self, coor_x, coor_y):
+        self.coor_x = coor_x
+        self.coor_y = coor_y
+
+class LeaderBoards(db.Model):
+    id = db.Column("id", db.Integer(), primary_key=True)
+    users = db.relationship('Users', backref='author', lazy=True)
 
 
 class Users(db.Model):
@@ -43,7 +51,7 @@ class Users(db.Model):
     average = db.Column(db.Float())
     standardDev = db.Column(db.Float())
     
-    def __init__(self, username):
+    def __init__(self, username, average, standardDev):
         self.username = username
         self.average = average
         self.standardDev = standardDev
@@ -57,9 +65,14 @@ class Users(db.Model):
 #app = Flask(__name__)
 
 
-@app.route("/")
-def hello_world():
-  return "test"
+@app.route("/initialize")
+def initializeDatabase():
+    pass
+    global_arena = Arenas()
+    new_user = Users(username=usrID)
+    db.session.add(new_user)
+    db.session.commit()
+
 
 
 class Connect_4_API:
@@ -166,6 +179,7 @@ class Connect_4_API:
         
         userUpdate = Users(userID, np.mean(moveScores), np.std(moveScores))
         found_user = Users.query.filter_by(username = userID).first()
+        
         print(found_user)
 
         return {"mean": str(np.mean(moveScores)), "std": str(np.std(moveScores))}
