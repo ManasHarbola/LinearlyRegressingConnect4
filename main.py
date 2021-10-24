@@ -196,6 +196,7 @@ class Connect_4_API:
     def addArena(arena_name, locationX, locationY):
         Connect_4_API.database[arena_name] = {"location": (locationX, locationY), "users": []}
         print(Connect_4_API.database)
+        return "works"
     
     @app.route("/addUserToArena/<user>/<arena>")
     def addUserToArena(user, arena):
@@ -207,6 +208,7 @@ class Connect_4_API:
 
         Connect_4_API.database[arena]["users"].append((user, avg, std))
         print(Connect_4_API.database)
+        return "works"
 
     
     @app.route("/rateOppMoves/<state>/<userID>")
@@ -236,6 +238,7 @@ class Connect_4_API:
         
         Connect_4_API.users[userID] = {"avg": np.mean(moveScores), "std": np.std(moveScores)}
         print(Connect_4_API.users)
+        return "works"
       
     #send move made by AI based on player simulation
     #def postNextMove(move):
