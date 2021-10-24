@@ -50,6 +50,9 @@ class LeaderBoards(db.Model):
     users = db.relationship('Users', backref='author', lazy=True)
     arena_id = db.Column(db.Integer, db.ForeignKey('Arenas.id'), nullable=False)
 
+    def __init__(self, arena_id):
+        self.arena_id = arena_id
+
 
 class Users(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
@@ -58,10 +61,11 @@ class Users(db.Model):
     standardDev = db.Column(db.Float())
     leaderboards_id = db.Column(db.Integer, db.ForeignKey('LeaderBoards.id'), nullable=False)
     
-    def __init__(self, username, average, standardDev):
+    def __init__(self, username, average, standardDev, leaderboards_id):
         self.username = username
         self.average = average
         self.standardDev = standardDev
+        self.leaderboards_id = leaderboards_id
 
 
     def __repr__(self):
