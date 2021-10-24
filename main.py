@@ -11,18 +11,6 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = "PLZWORK"
 
-"""
-SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{username}:{password}@{hostname}/{databasename}".format(
-    username="SpotifyUnlocked",
-    password="SacKings2020",
-    hostname="SpotifyUnlocked.mysql.pythonanywhere-services.com",
-    databasename="SpotifyUnlocked$vibes",
-)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-"""
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite3'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -34,7 +22,28 @@ class Arenas(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     coor_x = db.Column(db.Float())
     coor_y = db.Column(db.Float())
-    leaderBoards = 
+    leaderBoards = db.relationship('LeaderBoards', backref='author', lazy=True)
+    #children = db.relationship("Child")
+
+    def __init__(self, id, coor_x, coor_y):
+        self.id = id
+        self.coor_x = coor_x
+        self.coor_y = coor_y
+    
+    """
+    def __init__(self, coor_x, coor_y):
+        self.coor_x = coor_x
+        self.coor_y = coor_y
+    """
+
+class LeaderBoards(db.Model):
+    id = db.Column("id", db.Integer(), primary_key=True)
+    users = db.relationship('Users', backref='author', lazy=True)
+    arena_id = db.Column(db.Integer, db.ForeignKey(Arenas.id), nullable=False)
+    #Column('person_id', Integer, ForeignKey(tbl_person.c.id), primary_key=True)
+
+    def __init__(self, arena_id):
+        self.arena_id = arena_id
 
 
 class Users(db.Model):
@@ -42,11 +51,21 @@ class Users(db.Model):
     username = db.Column(db.String(100))
     average = db.Column(db.Float())
     standardDev = db.Column(db.Float())
+    leaderboards_id = db.Column(db.Integer, db.ForeignKey(LeaderBoards.id), nullable=False)
     
-    def __init__(self, username):
+    """
+    def __init__(self, id, username, average, standardDev, leaderboards_id):
         self.username = username
         self.average = average
         self.standardDev = standardDev
+        self.leaderboards_id = leaderboards_id
+    """
+    
+    def __init__(self, username, average, standardDev, leaderboards_id):
+        self.username = username
+        self.average = average
+        self.standardDev = standardDev
+        self.leaderboards_id = leaderboards_id
 
 
     def __repr__(self):
@@ -57,9 +76,24 @@ class Users(db.Model):
 #app = Flask(__name__)
 
 
-@app.route("/")
-def hello_world():
-  return "test"
+@app.route("/initialize")
+def initializeDatabase():
+    
+    global_arena = Arenas(0, 0, 0)
+    initial_leaderBoard = LeaderBoards(global_arena.id)
+    perfect_player = Users("perfect_player", 1.0, 0.1, initial_leaderBoard.id)
+    
+    #perfect_player = Users(username="perfect_player", average=1, standardDev=0.1, leaderboards_id=initial_leaderBoard.id)
+    
+    db.session.add(global_arena)
+    db.session.commit()
+    db.session.add(initial_leaderBoard)
+    db.session.commit()
+    db.session.add(perfect_player)
+    db.session.commit()
+
+
+
 
 
 class Connect_4_API:
@@ -79,6 +113,9 @@ class Connect_4_API:
 
     }
     users = {"id": {"std": 0.1, "avg": 1}}
+    database = {}
+    #{arena: {location: (x, y), users: [(id, avg, std)]}}
+
 
     @app.route("/generateNextMove/<jsonStr>")
     def generateNextMove(jsonStr):
@@ -92,12 +129,13 @@ class Connect_4_API:
 
         #get request 
         r = requests.get(url=Connect_4_API.GET_URL + board, headers=Connect_4_API.GET_HEADER)
+        print(r)
         data = r.json()
         move_and_vals = {}#{"score": "moves"}
         scores = []
 
         for i in range(1, len(data["score"]) + 1):
-            score = data["score"][i]
+            score = data["score"][i - 1]
             if score == 100:
                 continue
             if score not in move_and_vals.keys():
@@ -119,27 +157,51 @@ class Connect_4_API:
     def getBestMoves():
         pass
 
+    """
+    #usrID
     @app.route("/createNewUser/<usrID>")
     def createNewUser(usrID):
-        #try:
-        print("1")
-        new_user = Users(username=usrID)
+        try:
+            global_leaderBoard = LeaderBoards.query.filter_by(arena_id = 0).first()
+            for user in LeaderBoards.users:
+                user.id
+                user.average
+                user.standardDev
+
+            new_user = Users(username=usrID, average=0, standardDev=0, leaderboards_id=global_leaderBoard.id)
+            
+            db.session.add(new_user)
+            db.session.commit()
+
+            found_user = Users.query.filter_by(username = usrID).first()
+            print(found_user)
+            
+            return "SUCCESS"
+        except:
+            return "FAILURE"
+    """
+
+    @app.route("/addArena/<arena_name>/<locationX>/<locationY>")
+    def addArena(arena_name, locationX, locationY):
+        Connect_4_API.database[arena_name] = {"location": (locationX, locationY), "users": []}
+        print(Connect_4_API.database)
+        return "works"
+    
+    @app.route("/addUserToArena/<user>/<arena>")
+    def addUserToArena(user, arena):
+        if arena not in Connect_4_API.database.keys():
+            return
         
-        db.session.add(new_user)
-        print("3")
-        db.session.commit()
-        print("4")
+        avg = Connect_4_API.users[user]["avg"]
+        std = Connect_4_API.users[user]["std"]
 
-        found_user = Users.query.filter_by(username = usrID).first()
-        print("5")
-        print(found_user)
-        print("6")
+        Connect_4_API.database[arena]["users"].append((user, avg, std))
+        print(Connect_4_API.database)
+        return "works"
 
-        return "SUCCESS"
-        #except:
-        #    return "FAILURE"
+    
+    @app.route("/rateOppMoves/<state>/<userID>")
 
-    @app.route("/<state>")
     #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state, userID):
         moveScores = []
@@ -164,22 +226,16 @@ class Connect_4_API:
                 else:
                     moveScores.append(movesBetterThan / numChoices)
         
-        userUpdate = Users(userID, np.mean(moveScores), np.std(moveScores))
-        found_user = Users.query.filter_by(username = userID).first()
-        print(found_user)
-
-        return {"mean": str(np.mean(moveScores)), "std": str(np.std(moveScores))}
+        Connect_4_API.users[userID] = {"avg": np.mean(moveScores), "std": np.std(moveScores)}
+        print(Connect_4_API.users)
+        return "works"
+      
 
     def getArenaLeaderboard(arenaID):
-        try:
-            userList = LeaderBoards.query.filter_by(arena_id = arenaID).first()
-            ranked = []
-            for user in LeaderBoards.users:
-                ranked.append((user.id, user.average, user.standardDev))
-            ranked.sort(key=lambda user : (-user[1], user[2]))
-            return [user[0] for user in ranked]
-        except:
-            return "FAILURE"
+        #{arena: {location: (x, y), users: [(id, avg, std)]}}
+        users = database[arenaID]['users'].copy()
+        users.sort(key=lambda u : (-u[1], u[2]))
+        return [user[0] for user in users]
 
 db.create_all()
 
@@ -187,4 +243,5 @@ if __name__ == '__main__':
     obj = {"board": "1121", "player": "id"}
     jsonStr = json.dumps(obj)
     print(jsonStr)
-    app.run()
+    app.run(host='0.0.0.0', port=80)
+
