@@ -61,6 +61,12 @@ class Users(db.Model):
     standardDev = db.Column(db.Float())
     leaderboards_id = db.Column(db.Integer, db.ForeignKey('LeaderBoards.id'), nullable=False)
     
+    def __init__(self, id, username, average, standardDev, leaderboards_id):
+        self.username = username
+        self.average = average
+        self.standardDev = standardDev
+        self.leaderboards_id = leaderboards_id
+    
     def __init__(self, username, average, standardDev, leaderboards_id):
         self.username = username
         self.average = average
@@ -80,10 +86,14 @@ class Users(db.Model):
 def initializeDatabase():
     
     global_arena = Arenas(0, 0, 0)
+    initial_leaderBoard = LeaderBoards(global_arena.id)
+    perfect_player = Users(username="perfect_player", average=1, standardDev=0.1, leaderboards_id=initial_leaderBoard.id)
+    
     db.session.add(global_arena)
+    db.session.add(initial_leaderBoard)
+    db.session.add(perfect_player)
     db.session.commit()
 
-    initial_leaderBoard = LeaderBoards()
 
 
 
@@ -145,25 +155,21 @@ class Connect_4_API:
     def getBestMoves():
         pass
 
+    #usrID
     @app.route("/createNewUser/<usrID>")
     def createNewUser(usrID):
-        #try:
-        print("1")
-        new_user = Users(username=usrID)
-        
-        db.session.add(new_user)
-        print("3")
-        db.session.commit()
-        print("4")
+        try:
+            global_leaderBoard = LeaderBoards.query.filter_by(arena_id = 0).first()
+            new_user = Users(username=usrID, average=0, standardDev=0, leaderboards_id=global_leaderBoard.id)
+            
+            db.session.add(new_user)
+            db.session.commit()
 
-        found_user = Users.query.filter_by(username = usrID).first()
-        print("5")
-        print(found_user)
-        print("6")
+            found_user = Users.query.filter_by(username = usrID).first()
 
-        return "SUCCESS"
-        #except:
-        #    return "FAILURE"
+            return "SUCCESS"
+        except:
+            return "FAILURE"
 
     @app.route("/<state>")
     #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
