@@ -141,12 +141,13 @@ class Connect_4_API:
 
         #get request 
         r = requests.get(url=Connect_4_API.GET_URL + board, headers=Connect_4_API.GET_HEADER)
+        print(r)
         data = r.json()
         move_and_vals = {}#{"score": "moves"}
         scores = []
 
         for i in range(1, len(data["score"]) + 1):
-            score = data["score"][i]
+            score = data["score"][i - 1]
             if score == 100:
                 continue
             if score not in move_and_vals.keys():
@@ -212,6 +213,7 @@ class Connect_4_API:
 
     
     @app.route("/rateOppMoves/<state>/<userID>")
+
     #returns tuple of normalized average optimality score and the std dev of optimal moves made by opponent
     def rateOppMoves(state, userID):
         moveScores = []
@@ -284,3 +286,4 @@ if __name__ == '__main__':
     jsonStr = json.dumps(obj)
     print(jsonStr)
     app.run(host='0.0.0.0', port=80)
+
