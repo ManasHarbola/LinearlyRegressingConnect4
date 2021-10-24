@@ -11,18 +11,6 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = "PLZWORK"
 
-"""
-SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{username}:{password}@{hostname}/{databasename}".format(
-    username="SpotifyUnlocked",
-    password="SacKings2020",
-    hostname="SpotifyUnlocked.mysql.pythonanywhere-services.com",
-    databasename="SpotifyUnlocked$vibes",
-)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-"""
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite3'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -242,42 +230,12 @@ class Connect_4_API:
         print(Connect_4_API.users)
         return "works"
       
-    #send move made by AI based on player simulation
-    #def postNextMove(move):
-        #blah
 
-"""
-print("hello")
-api = Connect_4_API()
-
-GET_HEADER = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Connection": "keep-alive",
-        "Host": "connect4.gamesolver.org",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:93.0) Gecko/20100101 Firefox/93.0"
-}
-r = requests.get("https://connect4.gamesolver.org/solve?pos=1", headers=GET_HEADER)
-print(r.text)
-api.testGetReq("444447123311")
-
-"""
-
-'''
-for i in range(100):
-    r = requests.get("https://connect4.gamesolver.org/solve?pos=1", headers=headers)
-    print(r.text)
-'''
-#data = r.json()
-#jsonStr = json.dumps(data)
-#print(jsonStr)
-#print(Connect_4_API.rateOppMoves("44444723333213216275"))
+    def getArenaLeaderboard(arenaID):
+        #{arena: {location: (x, y), users: [(id, avg, std)]}}
+        users = database[arenaID]['users'].copy()
+        users.sort(key=lambda u : (-u[1], u[2]))
+        return [user[0] for user in users]
 
 db.create_all()
 
