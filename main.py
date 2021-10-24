@@ -36,6 +36,11 @@ class Arenas(db.Model):
     coor_y = db.Column(db.Float())
     leaderBoards = db.relationship('LeaderBoards', backref='author', lazy=True)
 
+    def __init__(self, id, coor_x, coor_y):
+        self.id = id
+        self.coor_x = coor_x
+        self.coor_y = coor_y
+    
     def __init__(self, coor_x, coor_y):
         self.coor_x = coor_x
         self.coor_y = coor_y
@@ -43,6 +48,7 @@ class Arenas(db.Model):
 class LeaderBoards(db.Model):
     id = db.Column("id", db.Integer(), primary_key=True)
     users = db.relationship('Users', backref='author', lazy=True)
+    arena_id = db.Column(db.Integer, db.ForeignKey('Arenas.id'), nullable=False)
 
 
 class Users(db.Model):
@@ -50,6 +56,7 @@ class Users(db.Model):
     username = db.Column(db.String(100))
     average = db.Column(db.Float())
     standardDev = db.Column(db.Float())
+    leaderboards_id = db.Column(db.Integer, db.ForeignKey('LeaderBoards.id'), nullable=False)
     
     def __init__(self, username, average, standardDev):
         self.username = username
@@ -67,11 +74,13 @@ class Users(db.Model):
 
 @app.route("/initialize")
 def initializeDatabase():
-    pass
-    global_arena = Arenas()
-    new_user = Users(username=usrID)
-    db.session.add(new_user)
+    
+    global_arena = Arenas(0, 0, 0)
+    db.session.add(global_arena)
     db.session.commit()
+
+    initial_leaderBoard = LeaderBoards()
+
 
 
 
