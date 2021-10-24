@@ -182,11 +182,18 @@ function Arena({ navigation }) {
     );
   }, [])
   
+  const topPlayers = ['ur mom']
+
   return (
     <View style={styles.centerItems}>
       <Text style={styles.welcomeMessage}>Welcome to Tech Green Arena</Text>
       <Text style={styles.topPlayer} >Top Players</Text>
-      <Text style={styles.leaderboard}>First: </Text>
+      {
+        topPlayers.map((player, idx) => {
+          <Text style={styles.leaderboard} key={idx}>First: </Text>
+        })
+      }
+      
       <Text style={styles.leaderboard}>Second: </Text>
       <Text style={styles.leaderboard}>Third: </Text>
 

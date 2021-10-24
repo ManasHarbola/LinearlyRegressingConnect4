@@ -51,8 +51,24 @@ const nextMove = async (moveHistory, playerId) => {
   return response.json();
 }
 
-const rateOpp = async (moveHistory) => {
-  const response = await fetch(API_URL + '/' + moveHistory, {
+const rateOppMoves = async (moveHistory, userId) => {
+  const response = await fetch(API_URL + '/rateOppMoves/' + moveHistory + '/' + userId, {
+    method: 'GET', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, *cors, same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+    //body: JSON.stringify(data) // body data type must match "Content-Type" header
+  });
+  return response.json();
+}
+
+const addUserToArena = async (user, arena) => {
+  const response = await fetch(API_URL + '/addUserToArena/' + user + '/' + arena, {
     method: 'GET', // *GET, POST, PUT, DELETE, etc.
     mode: 'cors', // no-cors, *cors, same-origin
     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -114,14 +130,17 @@ function Game({ route, navigation }) {
   const [gameOverMessage, setGameOverMessage] = useState(null);
   const [didWin, setDidWin] = useState(false);
 
+  const addPlayerToArena = async () => {
+    await addUserToArena(playerName, 0);
+    await rateOppMoves(moves, playerName);
+  }
+
   const onPress = async (row, col) => {
     if (gameOver) return;
     //console.log(row, col)
     const gridCopy = copyGrid(grid);
     if (addDisk(gridCopy, col, nextColor)) {
       const qmoves = moves + (col + 1)
-
-
 
       const move = await nextMove(qmoves, playerId)
       addDisk(gridCopy, move - 1, 'yellow');
@@ -133,11 +152,13 @@ function Game({ route, navigation }) {
         setGameOver(true)
         setDidWin(true)
         setGameOverMessage('You win! Good work.')
+        if (playerId === 'id') await addPlayerToArena();
         //navigation.navigate('YouWin', {playerId});
       } else if (checkGame(gridCopy, 'yellow')) {
         setGameOver(true)
         setDidWin(false)
         setGameOverMessage('You lose! Good work.')
+        if (playerId === 'id') await addPlayerToArena();
         //navigation.navigate('GameOver', {playerId});
       }
       // setNextColor(nextColor === 'red' ? 'yellow' : 'red');
